@@ -3,10 +3,10 @@ import argparse
 
 def arg_parser():
     parser = argparse.ArgumentParser(description = '   ')
-    parser.add_argument('-p', '--project',  required = True, choices= get_projects(), help = '')
-    parser.add_argument('-b', '--bug-ID',   required = True, help = '')
-    parser.add_argument('-t', '--task',     required = True, choices = ['info', 'checkout', 'test', 'per-test'], help='')
-    parser.add_argument('-v', '--version',  required = True, choices = ['buggy', 'fixed', 'fixed-only-test-change'], help='')
+    parser.add_argument('-p', '--project',  required = True, choices= get_projects(), help = 'asd')
+    parser.add_argument('-b', '--bug-ID',   required = True, help = 'fgh')
+    parser.add_argument('-t', '--task',     required = True, choices = ['info', 'checkout', 'test', 'per-test', "per-chain"], help='ijk')
+    parser.add_argument('-v', '--version',  required = True, choices = ['buggy', 'fixed', 'fixed-only-test-change'], help='ler')
 
     parser.add_argument('-o', '--output', help='output (clone, checkout etc) folder')
 

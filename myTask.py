@@ -21,3 +21,8 @@ def is_per_test(task):
     if task == "per-test":
         return True
     return False
+
+def is_per_chain(task):
+    if task == "per-chain":
+        return True
+    return False

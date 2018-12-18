@@ -119,15 +119,20 @@ def write_test_names_into_file():
     lines = jsonfile.readlines()
     for line in lines:
         if line.count("\"fullTitle\""):
-            test = line.split("\": \"")[1].split("\",\n")[0]
-            tests.add(test)
+            _test = ""
+            if line.count("\",\n"):
+                _test = str(line.split("fullTitle\": \"")[1].split("\",\n")[0])
+            if line.count("\"\n"):
+                _test = str(line.split("fullTitle\": \"")[1].split("\"\n")[0])
+            tests.add(_test)
     jsonfile.close()
 
-    jsonfile = open("./tests.json", 'w')
+    jsonfile = open("./tests.json", 'w', encoding='utf-8')
     jsonfile.write("[\n")
+    tests = list(tests)
     for x in range(len(tests)-1):
-        jsonfile.write("  \""+list(tests)[x]+"\",\n")
-    jsonfile.write("  \""+list(tests)[len(list(tests))-1]+"\"\n")
+        jsonfile.write("  \""+tests[x]+"\",\n")
+    jsonfile.write("  \""+tests[len(tests)-1]+"\"\n")
     jsonfile.write("]")
     jsonfile.close()
 
@@ -150,10 +155,20 @@ def run_coverage_command(coverage_command):
 def run_pertest_command(coverage_command):
     sp.call("/work/pertest.js -t ./tests.json -r perTest_results.txt -c \""+str(coverage_command)+"\"", shell=True)
 
+def run_perchain_command(test_command):
+    sp.call("/work/pertest.js --chain -t ./tests.json -r perChain_results.txt -c \""+str(test_command)+"\"", shell=True)
 
 def run_npm_install():
     sp.call("npm install", shell=True)
 
+
+def run_rm_traces():
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    for f in files:
+        if f.count("trace-"):
+            sp.call("rm ./"+f, shell=True)
+            print(f)
+    print("rm trace okes")
 
 # ======================= tests =============
 
@@ -161,13 +176,13 @@ def test(param_dict):
     myGit.checkout(param_dict)
     set_node_version(get_command(param_dict, "Node version"))
 
-    if get_command(param_dict, "Pre-command").count(".sh")==0:
-       run_pre_and_post_command(get_command(param_dict, "Pre-command"))
+    run_pre_and_post_command(get_command(param_dict, "Pre-command"))
     run_npm_install()
     run_pre_and_post_command(get_command(param_dict, "Pre-command"))
     run_test_command(get_command(param_dict, "Test command"))
     get_test_stat()
 
+    run_pre_and_post_command(get_command(param_dict, "Pre-command"))
     run_coverage_command(get_command(param_dict, "Coverage command"))
     get_cov_stat()
     run_pre_and_post_command(get_command(param_dict, "Post-command"))
@@ -184,5 +199,15 @@ def per_test(param_dict):
     get_test_stat()
 
     write_test_names_into_file()
+    run_rm_traces()
     run_pertest_command(get_command(param_dict, "Coverage command"))
+    run_pre_and_post_command(get_command(param_dict, "Post-command"))
+
+
+def per_chain(param_dict):
+    os.chdir(param_dict["output"])
+    os.chdir( os.listdir( "./" )[0] )
+    run_pre_and_post_command(get_command(param_dict, "Pre-command"))
+    run_rm_traces()
+    run_perchain_command(get_command(param_dict, "Test command"))
     run_pre_and_post_command(get_command(param_dict, "Post-command"))
