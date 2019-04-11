@@ -1,63 +1,53 @@
-import before
+
 import subprocess as sp
 import test_results
-import trace_actions
 import data_copy
 import os
 
-"""
-!!!!!! PATH ----> /data/Chain/node/out/Release:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-export PATH=/data/Chain/node/out/Release:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-"""
 
-"""
-os.chdir("/work/")
-sp.call("npm i --save glob", shell=True)
-os.chdir("/data/Chain/framework")
-"""
-
-filter_script = "/data/Chain/jerryscript-tools/callchain-filter.py"
 
 cwd = os.getcwd()
-before.settings()
 os.chdir(cwd)
 
-for x in range(2, 11):
 
-    project = "Hessian.js"
-    buggy_folder = "./Hessian_"+str(x)+"_buggy"
-    fixed_o_t_folder = "./Hessian_"+str(x)+"_fixed-only-test-change"
-    trace_folder = "./Hessian_" + str(x) + "_traces"
-    chain_folder = "./Hessian_" + str(x) + "_chains"
-    new_data_folder = "./Hessian_" + str(x) + "_data"
+for x in range(1, 5):
+    project = "Shields"  # <--- itt megadod a projekt nevet (azt ami a Projects.cs-ben van)
+    subfolder = "shields" # <--- itt megadod a github-os projekt nevet
+
+    # ezekbe a mappakba lesznek gyujtve a meresek
+    buggy_folder = "./"+str(project)+"_"+str(x)+"_buggy"
+    changes_folder = "./"+str(project)+"_"+str(x)+"_changes"
+    fixed_folder = "./"+str(project)+"_"+str(x)+"_fixed"
+    fixed_o_t_folder = "./"+str(project)+"_"+str(x)+"_fixed-only-test-change"
+    new_data_folder = "./"+str(project)+"_" + str(x) + "_data"
 
 
+    # ezek a 'netto meresek'
+    sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t test -v buggy -o "+changes_folder, shell=True)
+    os.chdir(cwd)
+    sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t test -v fixed -o "+fixed_folder, shell=True)
+    os.chdir(cwd)
     sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t per-test -v buggy -o "+buggy_folder, shell=True)
     os.chdir(cwd)
     sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t per-test -v fixed-only-test-change -o "+fixed_o_t_folder, shell=True)
     os.chdir(cwd)
-    sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t per-chain -v fixed-only-test-change -o "+fixed_o_t_folder, shell=True)
-    os.chdir(cwd)
 
 
+    try:
+        # elkeszitunk egy listat azokrol a metodusokrol, amelyek a hibas es a fixalt verzioban is buknak
+        # ezek a bug szempontjabol irrelevans buko tesztek
+        buggy_testMap = buggy_folder+"/"+str(subfolder)+"/testMap.csv"
+        buggy_perTest = buggy_folder+"/"+str(subfolder)+"/perTest_results.txt"
+        fixed_o_t_testMap = fixed_o_t_folder+"/"+str(subfolder)+"/testMap.csv"
+        fixed_o_t_perTest = fixed_o_t_folder+"/"+str(subfolder)+"/perTest_results.txt"
+        test_results.get_skipped_tests(buggy_testMap, buggy_perTest, fixed_o_t_testMap, fixed_o_t_perTest)
 
-    buggy_testMap = buggy_folder+"/hessian.js/testMap.csv"
-    buggy_perTest = buggy_folder+"/hessian.js/perTest_results.txt"
-    fixed_o_t_testMap = fixed_o_t_folder+"/hessian.js/testMap.csv"
-    fixed_o_t_perTest = fixed_o_t_folder+"/hessian.js/perTest_results.txt"
-    test_results.get_skipped_tests(buggy_testMap, buggy_perTest, fixed_o_t_testMap, fixed_o_t_perTest)
-
-
-    pattern = str(os.path.abspath(fixed_o_t_folder+"/hessian.js/")+"/lib")
-    trace_actions.trace_copy(fixed_o_t_folder+"/hessian.js/", trace_folder)
-    trace_actions.trace_convert_to_soda(trace_folder, pattern, filter_script, chain_folder)
-
-
-    data_copy.create_data_folders(new_data_folder)
-    data_copy.test_coverage_copy(fixed_o_t_folder+"/hessian.js", new_data_folder)
-    data_copy.chain_coverage_copy(chain_folder, new_data_folder)
-    data_copy.result_copy(fixed_o_t_folder+"/hessian.js", new_data_folder)
-    data_copy.dummy_copy(cwd, new_data_folder)
+        # osszegyujtjuk az adatokat a _data mappaba, hogy kesobb konnyebb legyen azokat felhasznalni/feldolgozni
+        data_copy.create_data_folders(new_data_folder)
+        data_copy.test_coverage_copy(fixed_o_t_folder+"/"+str(subfolder), new_data_folder)
+        data_copy.result_copy(fixed_o_t_folder+"/"+str(subfolder), new_data_folder)
+    except:
+        pass
 
 
 
