@@ -153,6 +153,7 @@ def run_coverage_command(coverage_command):
 
 
 def run_pertest_command(coverage_command):
+    print(os.getcwd())
     sp.call("/work/pertest.js -t ./tests.json -r perTest_results.txt -c \""+str(coverage_command)+"\"", shell=True)
 
 def run_perchain_command(test_command):
@@ -180,7 +181,7 @@ def test(param_dict):
     run_npm_install()
     run_pre_and_post_command(get_command(param_dict, "Pre-command"))
     run_test_command(get_command(param_dict, "Test command"))
-    get_test_stat()
+    #get_test_stat()
 
     run_pre_and_post_command(get_command(param_dict, "Pre-command"))
     run_coverage_command(get_command(param_dict, "Coverage command"))
@@ -192,11 +193,12 @@ def per_test(param_dict):
     myGit.checkout(param_dict)
     set_node_version(get_command(param_dict, "Node version"))
 
-    run_pre_and_post_command(get_command(param_dict, "Pre-command"))
     run_npm_install()
+    run_pre_and_post_command(get_command(param_dict, "Pre-command"))
+    #run_npm_install()
 
     run_test_command(get_command(param_dict, "Test command"))
-    get_test_stat()
+    #get_test_stat()
 
     write_test_names_into_file()
     run_rm_traces()

@@ -1,6 +1,6 @@
 import subprocess as sp
 import os
-
+import json
 
 
 def get_test_results(testMap, perTest_result):
@@ -16,13 +16,19 @@ def get_test_results(testMap, perTest_result):
                     results[line.split(";")[1]] = line.split(";")[0]
 
     test_map = {}
-    with open(testMap, "r", encoding='utf-8') as infile:
+    """with open(testMap, "r", encoding='utf-8') as infile:
         for line in infile:
             line = line.split("\n")[0]
             if line.count("id@@@test_name"):
                 pass
             else:
-                test_map[line.split("@@@")[0]] = line.split("@@@")[1]
+                test_map[line.split("@@@")[0]] = line.split("@@@")[1]"""
+
+    with open(testMap, "r", encoding='utf-8') as json_file:
+        data = json.load(json_file)
+        for k,v in data.items():
+            test_map[str(k)] = str(v)
+
 
     testname_results = {}
     for test, result in results.items():
@@ -48,13 +54,18 @@ def tests_comapre(buggy, fixed):
 
 def write_skipped_list(skipped_test_names, testMap, output_file):
     test_map = {}
-    with open(testMap, "r", encoding='utf-8') as infile:
+    """with open(testMap, "r", encoding='utf-8') as infile:
         for line in infile:
             line = line.split("\n")[0]
             if line.count("id@@@test_name"):
                 pass
             else:
-                test_map[line.split("@@@")[1]] = line.split("@@@")[0]
+                test_map[line.split("@@@")[1]] = line.split("@@@")[0]"""
+
+    with open(testMap, "r", encoding='utf-8') as json_file:
+        data = json.load(json_file)
+        for k,v in data.items():
+            test_map[str(v)] = str(k)
 
     skipped_file = open(output_file, "w")
     for skipped in skipped_test_names:
