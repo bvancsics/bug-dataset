@@ -1,36 +1,22 @@
-import before
 import subprocess as sp
 import test_results
-import trace_actions
 import data_copy
 import os
 
-"""
-!!!!!! PATH ----> /data/Chain/node/out/Release:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-export PATH=/data/Chain/node/out/Release:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-"""
-
-"""
-os.chdir("/work/")
-sp.call("npm i --save glob", shell=True)
-os.chdir("/data/Chain/framework")
-"""
 
 
 cwd = os.getcwd()
 os.chdir(cwd)
 
-#asd = [1,2,6,7,8,11,15,17,20,21]
-#for x in asd:
+
 for x in range(1, 2):
     project = "Eslint"
     subfolder = "eslint"
+
     changes = "./"+str(project)+"_"+str(x)+"_changes"
     buggy_folder = "./"+str(project)+"_"+str(x)+"_buggy"
-    fixed_folder = "./"+str(project)+"_"+str(x)+"_fixed"
+    #fixed_folder = "./"+str(project)+"_"+str(x)+"_fixed"
     fixed_o_t_folder = "./"+str(project)+"_"+str(x)+"_fixed-only-test-change"
-    #trace_folder = "./Hessian_" + str(x) + "_traces"
-    #chain_folder = "./Hessian_" + str(x) + "_chains"
     new_data_folder = "./"+str(project)+"_" + str(x) + "_data"
 
 
@@ -38,15 +24,13 @@ for x in range(1, 2):
     sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t test -v buggy -o "+changes, shell=True)
     os.chdir(cwd)
 
-    sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t test -v fixed -o "+fixed_folder, shell=True)
-    os.chdir(cwd)
+    #sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t test -v fixed -o "+fixed_folder, shell=True)
+    #os.chdir(cwd)
     sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t per-test -v buggy -o "+buggy_folder, shell=True)
     os.chdir(cwd)
     sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t per-test -v fixed-only-test-change -o "+fixed_o_t_folder, shell=True)
     os.chdir(cwd)
 
-    #sp.call("python3 main_bugsjs.py -p "+project+" -b "+str(x)+" -t per-chain -v fixed-only-test-change -o "+fixed_o_t_folder, shell=True)
-    #os.chdir(cwd)
 
 
     try:
@@ -56,21 +40,13 @@ for x in range(1, 2):
         fixed_o_t_perTest = fixed_o_t_folder+"/"+str(subfolder)+"/perTest_results.txt"
         
         test_results.get_skipped_tests(buggy_testMap, buggy_perTest, fixed_o_t_testMap, fixed_o_t_perTest)
-        
-        #pattern = str(os.path.abspath(fixed_o_t_folder+"/hessian.js/")+"/lib")
-        #trace_actions.trace_copy(fixed_o_t_folder+"/hessian.js/", trace_folder)
-        #trace_actions.trace_convert_to_soda(trace_folder, pattern, filter_script, chain_folder)
 
 
         data_copy.create_data_folders(new_data_folder)
         data_copy.test_coverage_copy(fixed_o_t_folder+"/"+str(subfolder), new_data_folder)
-        #data_copy.chain_coverage_copy(chain_folder, new_data_folder)
         data_copy.result_copy(fixed_o_t_folder+"/"+str(subfolder), new_data_folder)
-        #data_copy.dummy_copy(cwd, new_data_folder)
     except:
         pass
-
-
 
 
 
